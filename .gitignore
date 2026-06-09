@@ -1,0 +1,12 @@
+# 各项目实际配置（勿提交到 jenshow 工具仓库）
+project.conf
+
+# 构建产物
+*-server[0-9]*
+*-server[0-9]*_*
+dist_*.tar.gz
+
+# 编辑器
+.idea/
+.vscode/
+*.swp

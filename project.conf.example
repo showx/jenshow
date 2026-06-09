@@ -1,0 +1,30 @@
+# =================================================================
+# 项目配置模板 — 复制为 project.conf 后按项目修改
+#   cp project.conf.example project.conf
+# jenshow 仓库本身只提交此模板，各项目的 project.conf 请勿推送到工具仓库
+# =================================================================
+
+# ---------- 每个项目单独配置 ----------
+PROJECT_NAME="myapp"               # 项目名（决定服务器路径、服务名）
+SERVER_USER="root"
+SERVER_HOST=""                     # 发布时填写，如 1.2.3.4
+API_DOMAIN="your-api.example.com"  # 该项目的 API 域名
+FRONTEND_ROUTE="/admin888"
+BACKEND_PORT="8080"
+
+# 脚本下载源（一般不用改）
+JENSHOW_BASE_URL="https://raw.githubusercontent.com/showx/jenshow/main"
+
+# 本地目录（相对 project.conf 所在目录，按实际仓库结构调整）
+BACKEND_SCRIPTS_DIR="backend"
+FRONTEND_SCRIPTS_DIR="frontend"
+BACKEND_SRC_DIR="backend"
+GO_BUILD_TARGET="."
+FRONTEND_SRC_DIR="frontend"
+FRONTEND_BUILD_DIR="dist"
+FRONTEND_BUILD_CMD="npm run build"
+
+# 服务器目录（相对 /webwww/www/${PROJECT_NAME}）
+SERVER_BACKEND_SUBDIR="backend"
+SERVER_FRONTEND_SUBDIR="frontend"
+SERVER_FRONTEND_DIST="dist"

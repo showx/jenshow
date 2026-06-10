@@ -2,7 +2,18 @@
 
 set -euo pipefail
 
-bootstrap_deploy "$(cd "$(dirname "$0")" && pwd)"
+_script_dir="$(cd "$(dirname "$0")" && pwd)"
+_root="${_script_dir}"
+while [[ "${_root}" != "/" ]]; do
+    if [[ -f "${_root}/project_lib.sh" ]]; then
+        # shellcheck source=/dev/null
+        source "${_root}/project_lib.sh"
+        break
+    fi
+    _root="$(dirname "${_root}")"
+done
+
+bootstrap_deploy "${_script_dir}"
 require_server_host
 
 VERSION=${1:-$(date +%Y%m%d_%H%M)}

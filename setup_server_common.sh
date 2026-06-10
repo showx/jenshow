@@ -8,7 +8,7 @@ fi
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/main}"
+JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/master}"
 
 if [[ -f "${SCRIPT_DIR}/setup_lib.sh" ]]; then
     # shellcheck source=setup_lib.sh

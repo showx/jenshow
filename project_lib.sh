@@ -1,7 +1,7 @@
 #!/bin/bash
 # 配置加载、路径推导、构建与模板生成
 
-JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/main}"
+JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/master}"
 
 find_project_root() {
     local dir="$1"
@@ -24,7 +24,7 @@ load_project_config() {
     fi
 
     PROJECT_NAME="${PROJECT_NAME:?请在 project.conf 中设置 PROJECT_NAME}"
-    JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/main}"
+    JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/master}"
     SERVER_USER="${SERVER_USER:-root}"
     SERVER_HOST="${SERVER_HOST:-}"
     API_DOMAIN="${API_DOMAIN:-your-api.example.com}"
@@ -288,7 +288,7 @@ interactive_project_config() {
     echo ">>> [2/3] 运行参数"
     _wizard_input FRONTEND_ROUTE "前端 SPA 路由前缀" "/adminxend"
     _wizard_input BACKEND_PORT "后端端口" "8080"
-    JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/main}"
+    JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/master}"
 
     echo ""
     if _wizard_confirm "是否配置目录布局（高级）" "n"; then

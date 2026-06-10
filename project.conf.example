@@ -13,7 +13,7 @@ FRONTEND_ROUTE="/admin888"
 BACKEND_PORT="8080"
 
 # 脚本下载源（一般不用改）
-JENSHOW_BASE_URL="https://raw.githubusercontent.com/showx/jenshow/main"
+JENSHOW_BASE_URL="https://raw.githubusercontent.com/showx/jenshow/master"
 
 # 本地目录（相对 project.conf 所在目录，按实际仓库结构调整）
 BACKEND_SCRIPTS_DIR="backend"

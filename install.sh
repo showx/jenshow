@@ -4,8 +4,8 @@
 # 仓库: https://github.com/showx/jenshow
 #
 # 交互式（推荐）:
-#   curl -fsSL https://raw.githubusercontent.com/showx/jenshow/main/install.sh | bash -s -- init
-#   curl -fsSL https://raw.githubusercontent.com/showx/jenshow/main/install.sh | sudo bash -s -- setup-init
+#   curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | bash -s -- init
+#   curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | sudo bash -s -- setup-init
 #
 # 非交互:
 #   curl -fsSL .../install.sh | sudo bash -s -- setup
@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/main}"
+JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/master}"
 JENSHOW_INSTALL_URL="${JENSHOW_BASE_URL}/install.sh"
 
 usage() {

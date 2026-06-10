@@ -210,7 +210,7 @@ ensure_remote_script() {
 load_setup_libs() {
     local script_dir="$1"
 
-    JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/main}"
+    JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/master}"
 
     if [[ -f "${script_dir}/project_lib.sh" ]]; then
         # shellcheck source=project_lib.sh
@@ -246,7 +246,7 @@ load_setup_project_config() {
 }
 
 load_project_config_from_env() {
-    JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/main}"
+    JENSHOW_BASE_URL="${JENSHOW_BASE_URL:-https://raw.githubusercontent.com/showx/jenshow/master}"
     SERVER_USER="${SERVER_USER:-root}"
     API_DOMAIN="${API_DOMAIN:-your-api.example.com}"
     FRONTEND_ROUTE="${FRONTEND_ROUTE:-/adminxend}"

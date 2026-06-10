@@ -114,8 +114,8 @@ run_deploy_scripts() {
     source "${target_dir}/project_lib.sh"
     load_project_config "${target_dir}"
 
-    backend_dir="${target_dir}/${BACKEND_SCRIPTS_DIR}"
-    frontend_dir="${target_dir}/${FRONTEND_SCRIPTS_DIR}"
+    backend_dir="${target_dir}/${BACKEND_DIR}"
+    frontend_dir="${target_dir}/${FRONTEND_DIR}"
     mkdir -p "${backend_dir}" "${frontend_dir}"
 
     fetch "setup_lib.sh"           > "${target_dir}/setup_lib.sh"

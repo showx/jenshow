@@ -67,59 +67,25 @@ cp project.conf.example project.conf
 | Supervisor 程序名 | `myapp-server` |
 | Nginx 站点配置 | `/etc/nginx/sites-enabled/myapp.conf` |
 
-### 本地目录配置
+### 目录配置
+
+本地与服务器使用相同目录名（相对 `project.conf` / `WEB_ROOT`）：
 
 ```bash
-# 发布脚本放哪
-BACKEND_SCRIPTS_DIR="backend"
-FRONTEND_SCRIPTS_DIR="frontend"
-
-# 源码在哪
-BACKEND_SRC_DIR="backend"         # Go 工程（含 go.mod）
+BACKEND_DIR="backend"             # 后端：脚本 + Go 源码 + 服务器部署
+FRONTEND_DIR="frontend"           # 前端：脚本 + 源码 + 服务器部署
+FRONTEND_DIST="dist"              # 前端构建产物子目录
 GO_BUILD_TARGET="."               # go build 目标
-FRONTEND_SRC_DIR="frontend"       # 前端工程（含 package.json）
-FRONTEND_BUILD_DIR="dist"         # 构建产物子目录
 FRONTEND_BUILD_CMD="npm run build"
-
-# 服务器子目录（相对 WEB_ROOT）
-SERVER_BACKEND_SUBDIR="backend"
-SERVER_FRONTEND_SUBDIR="frontend"
-SERVER_FRONTEND_DIST="dist"
 ```
 
 ### 目录布局示例
 
-**默认结构**（脚本与源码同在 `backend/`、`frontend/`）：
-
 ```
 myrepo/
 ├── project.conf
-├── backend/          ← 脚本 + Go 代码
-└── frontend/         ← 脚本 + 前端代码
-```
-
-**Monorepo 常见结构**（脚本、源码分离）：
-
-```
-myrepo/
-├── project.conf
-├── deploy/
-│   ├── backend/      ← BACKEND_SCRIPTS_DIR="deploy/backend"
-│   └── frontend/       ← FRONTEND_SCRIPTS_DIR="deploy/frontend"
-├── apps/
-│   ├── api/            ← BACKEND_SRC_DIR="apps/api"
-│   └── web/            ← FRONTEND_SRC_DIR="apps/web"
-```
-
-对应配置：
-
-```bash
-BACKEND_SCRIPTS_DIR="deploy/backend"
-FRONTEND_SCRIPTS_DIR="deploy/frontend"
-BACKEND_SRC_DIR="apps/api"
-GO_BUILD_TARGET="./cmd/server"
-FRONTEND_SRC_DIR="apps/web"
-FRONTEND_BUILD_DIR="dist"
+├── backend/          ← BACKEND_DIR（脚本 + Go 代码）
+└── frontend/         ← FRONTEND_DIR（脚本 + 前端代码）
 ```
 
 发布脚本会从自身位置**向上查找** `project.conf`，因此脚本目录可以任意嵌套。
@@ -197,7 +163,7 @@ curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | b
 
 ### 4. 发布后端
 
-在 `BACKEND_SCRIPTS_DIR` 对应目录下（默认 `backend/`）：
+在 `BACKEND_DIR` 对应目录下（默认 `backend/`）：
 
 ```bash
 # 编译 + 上传 + 远程部署（推荐）
@@ -214,7 +180,7 @@ curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | b
 
 ### 5. 发布前端
 
-在 `FRONTEND_SCRIPTS_DIR` 对应目录下（默认 `frontend/`）：
+在 `FRONTEND_DIR` 对应目录下（默认 `frontend/`）：
 
 ```bash
 ./build_and_upload.sh
@@ -231,7 +197,7 @@ curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | b
 
 ```
 本机 build_upload_deploy.sh
-  ├─ go build（按 BACKEND_SRC_DIR / GO_BUILD_TARGET 编译）
+  ├─ go build（按 BACKEND_DIR / GO_BUILD_TARGET 编译）
   ├─ 输出 myapp-server<版本号> 到 backend/ 脚本目录
   ├─ scp 上传到服务器 backend/
   └─ ssh 远程执行 deploy.sh <版本号>

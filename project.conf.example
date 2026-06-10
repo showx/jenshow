@@ -15,16 +15,9 @@ BACKEND_PORT="8080"
 # 脚本下载源（一般不用改）
 JENSHOW_BASE_URL="https://raw.githubusercontent.com/showx/jenshow/master"
 
-# 本地目录（相对 project.conf 所在目录，按实际仓库结构调整）
-BACKEND_SCRIPTS_DIR="backend"
-FRONTEND_SCRIPTS_DIR="frontend"
-BACKEND_SRC_DIR="backend"
+# 目录布局（相对 project.conf / WEB_ROOT，本地与服务器保持一致）
+BACKEND_DIR="backend"              # 后端：脚本 + Go 源码 + 服务器部署目录
+FRONTEND_DIR="frontend"            # 前端：脚本 + 源码 + 服务器部署目录
+FRONTEND_DIST="dist"               # 前端构建产物子目录
 GO_BUILD_TARGET="."
-FRONTEND_SRC_DIR="frontend"
-FRONTEND_BUILD_DIR="dist"
 FRONTEND_BUILD_CMD="npm run build"
-
-# 服务器目录（相对 /webwww/www/${PROJECT_NAME}）
-SERVER_BACKEND_SUBDIR="backend"
-SERVER_FRONTEND_SUBDIR="frontend"
-SERVER_FRONTEND_DIST="dist"

@@ -41,9 +41,9 @@ echo ">>> [4/9] SSH (SFTP)..."
 configure_ssh_for_sftp
 
 echo ">>> [5/9] 项目目录..."
-ensure_directory "${BACKEND_DIR}"
-ensure_directory "${FRONTEND_DIST}"
-ensure_directory "${FRONTEND_DIR}" "www-data:www-data"
+ensure_directory "${SERVER_BACKEND}"
+ensure_directory "${SERVER_FRONTEND_DIST}"
+ensure_directory "${SERVER_FRONTEND}" "www-data:www-data"
 
 echo ">>> [6/9] Redis..."
 ensure_package redis-server
@@ -55,7 +55,7 @@ server {
     listen 80;
     server_name ${API_DOMAIN};
 
-    root ${FRONTEND_DIST};
+    root ${SERVER_FRONTEND_DIST};
     index index.html;
 
     location ${FRONTEND_ROUTE} {
@@ -78,11 +78,11 @@ $(render_supervisor_conf)
 EOF
 
 echo ">>> [9/9] 同步 deploy 配置..."
-render_server_project_conf | write_file_if_changed "${BACKEND_DIR}/project.conf" || true
-ensure_remote_script "${JENSHOW_BASE_URL}/backend/deploy.sh" "${BACKEND_DIR}/deploy.sh"
+render_server_project_conf | write_file_if_changed "${SERVER_BACKEND}/project.conf" || true
+ensure_remote_script "${JENSHOW_BASE_URL}/backend/deploy.sh" "${SERVER_BACKEND}/deploy.sh"
 
 echo "================================================================="
 echo "  搭建完成 | 项目: ${PROJECT_NAME} | 服务: ${SUPERVISOR_PROGRAM}"
-echo "  后端: ${BACKEND_DIR} | 前端: ${FRONTEND_DIST}"
+echo "  后端: ${SERVER_BACKEND} | 前端: ${SERVER_FRONTEND_DIST}"
 echo "  仓库: https://github.com/showx/jenshow"
 echo "================================================================="

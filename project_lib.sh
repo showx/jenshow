@@ -31,29 +31,23 @@ load_project_config() {
     FRONTEND_ROUTE="${FRONTEND_ROUTE:-/adminxend}"
     BACKEND_PORT="${BACKEND_PORT:-8080}"
 
-    BACKEND_SCRIPTS_DIR="${BACKEND_SCRIPTS_DIR:-backend}"
-    FRONTEND_SCRIPTS_DIR="${FRONTEND_SCRIPTS_DIR:-frontend}"
-    BACKEND_SRC_DIR="${BACKEND_SRC_DIR:-backend}"
+    BACKEND_DIR="${BACKEND_DIR:-${BACKEND_SCRIPTS_DIR:-${BACKEND_SRC_DIR:-${SERVER_BACKEND_SUBDIR:-backend}}}}"
+    FRONTEND_DIR="${FRONTEND_DIR:-${FRONTEND_SCRIPTS_DIR:-${FRONTEND_SRC_DIR:-${SERVER_FRONTEND_SUBDIR:-frontend}}}}"
+    FRONTEND_DIST="${FRONTEND_DIST:-${FRONTEND_BUILD_DIR:-${SERVER_FRONTEND_DIST:-dist}}}"
     GO_BUILD_TARGET="${GO_BUILD_TARGET:-.}"
-    FRONTEND_SRC_DIR="${FRONTEND_SRC_DIR:-frontend}"
-    FRONTEND_BUILD_DIR="${FRONTEND_BUILD_DIR:-dist}"
     FRONTEND_BUILD_CMD="${FRONTEND_BUILD_CMD:-npm run build}"
-
-    SERVER_BACKEND_SUBDIR="${SERVER_BACKEND_SUBDIR:-backend}"
-    SERVER_FRONTEND_SUBDIR="${SERVER_FRONTEND_SUBDIR:-frontend}"
-    SERVER_FRONTEND_DIST="${SERVER_FRONTEND_DIST:-dist}"
 
     GOOS="${GOOS:-linux}"
     GOARCH="${GOARCH:-amd64}"
 
     APP_NAME="${PROJECT_NAME}-server"
     WEB_ROOT="/webwww/www/${PROJECT_NAME}"
-    BACKEND_DIR="${WEB_ROOT}/${SERVER_BACKEND_SUBDIR}"
-    FRONTEND_DIR="${WEB_ROOT}/${SERVER_FRONTEND_SUBDIR}"
-    FRONTEND_DIST="${FRONTEND_DIR}/${SERVER_FRONTEND_DIST}"
-    REMOTE_PATH="${BACKEND_DIR}/"
-    REMOTE_BASE_PATH="${FRONTEND_DIR}"
-    REMOTE_DIST_PATH="${FRONTEND_DIST}"
+    SERVER_BACKEND="${WEB_ROOT}/${BACKEND_DIR}"
+    SERVER_FRONTEND="${WEB_ROOT}/${FRONTEND_DIR}"
+    SERVER_FRONTEND_DIST="${SERVER_FRONTEND}/${FRONTEND_DIST}"
+    REMOTE_PATH="${SERVER_BACKEND}/"
+    REMOTE_BASE_PATH="${SERVER_FRONTEND}"
+    REMOTE_DIST_PATH="${SERVER_FRONTEND_DIST}"
     SUPERVISOR_PROGRAM="${APP_NAME}"
     SUPERVISOR_CONF="/etc/supervisor/conf.d/${APP_NAME}.conf"
     NGINX_CONF="/etc/nginx/sites-enabled/${PROJECT_NAME}.conf"
@@ -70,11 +64,9 @@ setup_deploy_context() {
     load_project_config "${PROJECT_ROOT}"
 
     DEPLOY_SCRIPT_DIR="${script_dir}"
-    BACKEND_SCRIPTS_ABS="${PROJECT_ROOT}/${BACKEND_SCRIPTS_DIR}"
-    FRONTEND_SCRIPTS_ABS="${PROJECT_ROOT}/${FRONTEND_SCRIPTS_DIR}"
-    BACKEND_SRC_ABS="${PROJECT_ROOT}/${BACKEND_SRC_DIR}"
-    FRONTEND_SRC_ABS="${PROJECT_ROOT}/${FRONTEND_SRC_DIR}"
-    FRONTEND_BUILD_ABS="${PROJECT_ROOT}/${FRONTEND_SRC_DIR}/${FRONTEND_BUILD_DIR}"
+    BACKEND_ABS="${PROJECT_ROOT}/${BACKEND_DIR}"
+    FRONTEND_ABS="${PROJECT_ROOT}/${FRONTEND_DIR}"
+    FRONTEND_BUILD_ABS="${PROJECT_ROOT}/${FRONTEND_DIR}/${FRONTEND_DIST}"
 }
 
 bootstrap_deploy() {
@@ -104,18 +96,18 @@ require_server_host() {
 
 build_backend_binary() {
     local output_name="$1"
-    local output_path="${BACKEND_SCRIPTS_ABS}/${output_name}"
+    local output_path="${BACKEND_ABS}/${output_name}"
 
-    [[ -d "${BACKEND_SRC_ABS}" ]] || {
-        echo "❌ Go 源码目录不存在: ${BACKEND_SRC_ABS}"
+    [[ -d "${BACKEND_ABS}" ]] || {
+        echo "❌ 后端目录不存在: ${BACKEND_ABS}"
         return 1
     }
 
-    echo ">>> 编译: ${BACKEND_SRC_ABS} (${GO_BUILD_TARGET})"
+    echo ">>> 编译: ${BACKEND_ABS} (${GO_BUILD_TARGET})"
     echo ">>> 输出: ${output_path}"
 
     (
-        cd "${BACKEND_SRC_ABS}"
+        cd "${BACKEND_ABS}"
         export GOOS GOARCH
         export CGO_ENABLED=0
         go build -o "${output_path}" "${GO_BUILD_TARGET}"
@@ -124,7 +116,7 @@ build_backend_binary() {
 
 upload_backend_binary() {
     local binary_name="$1"
-    local binary_path="${BACKEND_SCRIPTS_ABS}/${binary_name}"
+    local binary_path="${BACKEND_ABS}/${binary_name}"
 
     echo ">>> 上传: ${SERVER_USER}@${SERVER_HOST}:${REMOTE_PATH}"
     scp "${binary_path}" "${SERVER_USER}@${SERVER_HOST}:${REMOTE_PATH}"
@@ -139,17 +131,17 @@ deploy_backend_remote() {
 build_frontend_package() {
     local version="$1"
     local archive_name="dist_${version}.tar.gz"
-    local archive_path="${FRONTEND_SCRIPTS_ABS}/${archive_name}"
+    local archive_path="${FRONTEND_ABS}/${archive_name}"
 
-    [[ -d "${FRONTEND_SRC_ABS}" ]] || {
-        echo "❌ 前端工程目录不存在: ${FRONTEND_SRC_ABS}"
+    [[ -d "${FRONTEND_ABS}" ]] || {
+        echo "❌ 前端目录不存在: ${FRONTEND_ABS}"
         return 1
     }
 
-    echo ">>> 前端: ${FRONTEND_SRC_ABS}"
+    echo ">>> 前端: ${FRONTEND_ABS}"
     echo ">>> 命令: ${FRONTEND_BUILD_CMD}"
 
-    ( cd "${FRONTEND_SRC_ABS}" && eval "${FRONTEND_BUILD_CMD}" ) || return 1
+    ( cd "${FRONTEND_ABS}" && eval "${FRONTEND_BUILD_CMD}" ) || return 1
 
     [[ -d "${FRONTEND_BUILD_ABS}" ]] || {
         echo "❌ 构建产物不存在: ${FRONTEND_BUILD_ABS}"
@@ -164,8 +156,8 @@ build_frontend_package() {
 render_supervisor_conf() {
     cat <<EOF
 [program:${SUPERVISOR_PROGRAM}]
-command=${BACKEND_DIR}/${APP_NAME}
-directory=${BACKEND_DIR}
+command=${SERVER_BACKEND}/${APP_NAME}
+directory=${SERVER_BACKEND}
 user=root
 autostart=true
 autorestart=true
@@ -188,7 +180,7 @@ render_server_project_conf() {
 PROJECT_NAME="${PROJECT_NAME}"
 APP_NAME="${APP_NAME}"
 SUPERVISOR_PROGRAM="${SUPERVISOR_PROGRAM}"
-SERVER_FRONTEND_DIST="${SERVER_FRONTEND_DIST}"
+FRONTEND_DIST="${FRONTEND_DIST}"
 EOF
 }
 
@@ -236,17 +228,11 @@ BACKEND_PORT="${BACKEND_PORT}"
 
 JENSHOW_BASE_URL="${JENSHOW_BASE_URL}"
 
-BACKEND_SCRIPTS_DIR="${BACKEND_SCRIPTS_DIR}"
-FRONTEND_SCRIPTS_DIR="${FRONTEND_SCRIPTS_DIR}"
-BACKEND_SRC_DIR="${BACKEND_SRC_DIR}"
+BACKEND_DIR="${BACKEND_DIR}"
+FRONTEND_DIR="${FRONTEND_DIR}"
+FRONTEND_DIST="${FRONTEND_DIST}"
 GO_BUILD_TARGET="${GO_BUILD_TARGET}"
-FRONTEND_SRC_DIR="${FRONTEND_SRC_DIR}"
-FRONTEND_BUILD_DIR="${FRONTEND_BUILD_DIR}"
 FRONTEND_BUILD_CMD="${FRONTEND_BUILD_CMD}"
-
-SERVER_BACKEND_SUBDIR="${SERVER_BACKEND_SUBDIR}"
-SERVER_FRONTEND_SUBDIR="${SERVER_FRONTEND_SUBDIR}"
-SERVER_FRONTEND_DIST="${SERVER_FRONTEND_DIST}"
 EOF
 }
 
@@ -254,10 +240,8 @@ export_project_env() {
     load_project_config "${1}"
     export PROJECT_NAME SERVER_USER SERVER_HOST API_DOMAIN
     export FRONTEND_ROUTE BACKEND_PORT JENSHOW_BASE_URL
-    export BACKEND_SCRIPTS_DIR FRONTEND_SCRIPTS_DIR BACKEND_SRC_DIR GO_BUILD_TARGET
-    export FRONTEND_SRC_DIR FRONTEND_BUILD_DIR FRONTEND_BUILD_CMD
-    export SERVER_BACKEND_SUBDIR SERVER_FRONTEND_SUBDIR SERVER_FRONTEND_DIST
-    export APP_NAME WEB_ROOT BACKEND_DIR FRONTEND_DIR FRONTEND_DIST
+    export BACKEND_DIR FRONTEND_DIR FRONTEND_DIST GO_BUILD_TARGET FRONTEND_BUILD_CMD
+    export APP_NAME WEB_ROOT SERVER_BACKEND SERVER_FRONTEND SERVER_FRONTEND_DIST
     export SUPERVISOR_PROGRAM SUPERVISOR_CONF NGINX_CONF REMOTE_PATH REMOTE_BASE_PATH
 }
 
@@ -293,35 +277,25 @@ interactive_project_config() {
     echo ""
     if _wizard_confirm "是否配置目录布局（高级）" "n"; then
         echo ">>> [3/3] 目录布局"
-        _wizard_input BACKEND_SCRIPTS_DIR "后端脚本目录" "backend"
-        _wizard_input FRONTEND_SCRIPTS_DIR "前端脚本目录" "frontend"
-        _wizard_input BACKEND_SRC_DIR "Go 源码目录" "backend"
+        _wizard_input BACKEND_DIR "后端目录（脚本+源码+部署）" "backend"
+        _wizard_input FRONTEND_DIR "前端目录（脚本+源码+部署）" "frontend"
+        _wizard_input FRONTEND_DIST "前端构建产物子目录" "dist"
         _wizard_input GO_BUILD_TARGET "go build 目标" "."
-        _wizard_input FRONTEND_SRC_DIR "前端源码目录" "frontend"
-        _wizard_input FRONTEND_BUILD_DIR "前端构建产物子目录" "dist"
         FRONTEND_BUILD_CMD="npm run build"
-        _wizard_input SERVER_BACKEND_SUBDIR "服务器后端子目录" "backend"
-        _wizard_input SERVER_FRONTEND_SUBDIR "服务器前端子目录" "frontend"
-        _wizard_input SERVER_FRONTEND_DIST "服务器静态目录名" "dist"
     else
         echo ">>> [3/3] 使用默认目录布局"
-        BACKEND_SCRIPTS_DIR="backend"
-        FRONTEND_SCRIPTS_DIR="frontend"
-        BACKEND_SRC_DIR="backend"
+        BACKEND_DIR="backend"
+        FRONTEND_DIR="frontend"
+        FRONTEND_DIST="dist"
         GO_BUILD_TARGET="."
-        FRONTEND_SRC_DIR="frontend"
-        FRONTEND_BUILD_DIR="dist"
         FRONTEND_BUILD_CMD="npm run build"
-        SERVER_BACKEND_SUBDIR="backend"
-        SERVER_FRONTEND_SUBDIR="frontend"
-        SERVER_FRONTEND_DIST="dist"
     fi
 
     APP_NAME="${PROJECT_NAME}-server"
     WEB_ROOT="/webwww/www/${PROJECT_NAME}"
-    BACKEND_DIR="${WEB_ROOT}/${SERVER_BACKEND_SUBDIR}"
-    FRONTEND_DIR="${WEB_ROOT}/${SERVER_FRONTEND_SUBDIR}"
-    FRONTEND_DIST="${FRONTEND_DIR}/${SERVER_FRONTEND_DIST}"
+    SERVER_BACKEND="${WEB_ROOT}/${BACKEND_DIR}"
+    SERVER_FRONTEND="${WEB_ROOT}/${FRONTEND_DIR}"
+    SERVER_FRONTEND_DIST="${SERVER_FRONTEND}/${FRONTEND_DIST}"
     SUPERVISOR_PROGRAM="${APP_NAME}"
 
     echo ""
@@ -331,8 +305,8 @@ interactive_project_config() {
     echo "  域名:       ${API_DOMAIN}"
     echo "  服务器:     ${SERVER_USER}@${SERVER_HOST:-（未填）}"
     echo "  部署路径:   ${WEB_ROOT}"
-    echo "  后端源码:   ${BACKEND_SRC_DIR} → ${GO_BUILD_TARGET}"
-    echo "  前端源码:   ${FRONTEND_SRC_DIR}/${FRONTEND_BUILD_DIR}"
+    echo "  后端目录:   ${BACKEND_DIR} → ${GO_BUILD_TARGET}"
+    echo "  前端目录:   ${FRONTEND_DIR}/${FRONTEND_DIST}"
     echo "------------------------------"
     echo ""
 

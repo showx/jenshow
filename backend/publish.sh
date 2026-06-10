@@ -31,7 +31,7 @@ echo "🚀 ${PROJECT_NAME} / ${BINARY_NAME}"
 echo "=========================================="
 
 build_backend_binary "${BINARY_NAME}" || {
-    echo "❌ 编译失败，请检查 BACKEND_SRC_DIR / GO_BUILD_TARGET"
+    echo "❌ 编译失败，请检查 BACKEND_DIR / GO_BUILD_TARGET"
     exit 1
 }
 echo "✅ 编译成功"

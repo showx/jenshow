@@ -94,6 +94,15 @@ require_server_host() {
     fi
 }
 
+ensure_remote_directory() {
+    local remote_dir="${1%/}"
+    [[ -n "${remote_dir}" ]] || return 1
+
+    echo ">>> 检查远程目录: ${SERVER_USER}@${SERVER_HOST}:${remote_dir}"
+    ssh "${SERVER_USER}@${SERVER_HOST}" \
+        "if [ ! -d '${remote_dir}' ]; then mkdir -p '${remote_dir}'; fi"
+}
+
 build_backend_binary() {
     local output_name="$1"
     local output_path="${BACKEND_ABS}/${output_name}"
@@ -117,6 +126,8 @@ build_backend_binary() {
 upload_backend_binary() {
     local binary_name="$1"
     local binary_path="${BACKEND_ABS}/${binary_name}"
+
+    ensure_remote_directory "${REMOTE_PATH}"
 
     echo ">>> 上传: ${SERVER_USER}@${SERVER_HOST}:${REMOTE_PATH}"
     scp "${binary_path}" "${SERVER_USER}@${SERVER_HOST}:${REMOTE_PATH}"

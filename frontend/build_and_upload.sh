@@ -23,6 +23,8 @@ build_frontend_package "${VERSION}" || {
     exit 1
 }
 
+ensure_remote_directory "${REMOTE_BASE_PATH}"
+
 echo ">>> 上传: ${SERVER_USER}@${SERVER_HOST}:${REMOTE_BASE_PATH}/"
 scp "${FRONTEND_ARCHIVE_PATH}" "${SERVER_USER}@${SERVER_HOST}:${REMOTE_BASE_PATH}/"
 

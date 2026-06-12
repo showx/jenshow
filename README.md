@@ -7,6 +7,84 @@
 
 ---
 
+## 快速开始
+
+### 1. 交互式配置（推荐，curl 一步步来）
+
+**本机：交互配置 + 下载发布脚本**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | bash -s -- init ./myproject
+```
+
+会依次询问（回车即用默认值）：
+
+1. **项目标识** — 项目名、API 域名、服务器 IP、SSH 用户  
+2. **运行参数** — 前端路由、后端端口  
+3. **目录布局**（可选高级）— Go/前端源码路径  
+
+确认后生成 `project.conf` 并下载全部脚本；完成后可选择在远程服务器自动搭建环境（Nginx + Supervisor + Redis）。
+
+**仅交互生成配置（不下载脚本）：**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | bash -s -- configure
+```
+
+**服务器：交互配置 + 环境搭建（需 root）：**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | sudo bash -s -- setup-init
+```
+
+> 说明：curl 管道执行时仍可在终端输入，脚本从 `/dev/tty` 读取。若无 TTY，请先下载再执行：  
+> `curl -fsSL ... -o install.sh && bash install.sh init`
+
+### 2. 非交互方式（已有配置或环境变量）
+
+```bash
+PROJECT_NAME=qsdk API_DOMAIN=qsdk.example.com \
+curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | sudo bash -s -- setup
+```
+
+本地已有 `project.conf` 时：`sudo ./setup_server.sh`
+
+### 3. 本机仅下载脚本（无交互，使用模板）
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | bash -s -- deploy-scripts ./my-project
+```
+
+### 4. 发布后端
+
+在 `BACKEND_DIR` 对应目录下（默认 `backend/`）：
+
+```bash
+# 编译 + 上传 + 远程部署（推荐）
+./publish.sh
+./publish.sh 20260109_1530
+
+# 等价快捷方式
+./build_upload_deploy.sh
+
+# 仅编译 + 上传
+./publish.sh --upload-only
+./build_and_upload.sh
+```
+
+### 5. 发布前端
+
+在 `FRONTEND_DIR` 对应目录下（默认 `frontend/`）：
+
+```bash
+./build_and_upload.sh
+
+# 指定版本号
+./build_and_upload.sh 20260109_1530
+```
+
+---
+
 ## 目录结构
 
 ```
@@ -99,84 +177,6 @@ SERVER_HOST="1.2.3.4"             # 发布时必填
 API_DOMAIN="api.example.com"
 FRONTEND_ROUTE="/adminxend"
 BACKEND_PORT="8080"
-```
-
----
-
-## 快速开始
-
-### 1. 交互式配置（推荐，curl 一步步来）
-
-**本机：交互配置 + 下载发布脚本**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | bash -s -- init ./myproject
-```
-
-会依次询问（回车即用默认值）：
-
-1. **项目标识** — 项目名、API 域名、服务器 IP、SSH 用户  
-2. **运行参数** — 前端路由、后端端口  
-3. **目录布局**（可选高级）— Go/前端源码路径  
-
-确认后生成 `project.conf` 并下载全部脚本。
-
-**仅交互生成配置（不下载脚本）：**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | bash -s -- configure
-```
-
-**服务器：交互配置 + 环境搭建（需 root）：**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | sudo bash -s -- setup-init
-```
-
-> 说明：curl 管道执行时仍可在终端输入，脚本从 `/dev/tty` 读取。若无 TTY，请先下载再执行：  
-> `curl -fsSL ... -o install.sh && bash install.sh init`
-
-### 2. 非交互方式（已有配置或环境变量）
-
-```bash
-PROJECT_NAME=qsdk API_DOMAIN=qsdk.example.com \
-curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | sudo bash -s -- setup
-```
-
-本地已有 `project.conf` 时：`sudo ./setup_server.sh`
-
-### 3. 本机仅下载脚本（无交互，使用模板）
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | bash -s -- deploy-scripts ./my-project
-```
-
-### 4. 发布后端
-
-在 `BACKEND_DIR` 对应目录下（默认 `backend/`）：
-
-```bash
-# 编译 + 上传 + 远程部署（推荐）
-./publish.sh
-./publish.sh 20260109_1530
-
-# 等价快捷方式
-./build_upload_deploy.sh
-
-# 仅编译 + 上传
-./publish.sh --upload-only
-./build_and_upload.sh
-```
-
-### 5. 发布前端
-
-在 `FRONTEND_DIR` 对应目录下（默认 `frontend/`）：
-
-```bash
-./build_and_upload.sh
-
-# 指定版本号
-./build_and_upload.sh 20260109_1530
 ```
 
 ---

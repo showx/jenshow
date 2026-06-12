@@ -5,6 +5,7 @@
 #
 # 交互式（推荐）:
 #   curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | bash -s -- init
+#   init 完成后会询问是否在远程服务器搭建环境（自动 SSH + curl setup）
 #   curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | sudo bash -s -- setup-init
 #
 # 非交互:
@@ -22,7 +23,7 @@ usage() {
 
 命令:
   configure          交互式生成 project.conf（分 3 步）
-  init [目录]        交互式配置 + 下载发布脚本（本机推荐）
+  init [目录]        交互式配置 + 下载脚本 + 可选远程搭建（本机推荐）
   setup-init [目录]  交互式配置 + 服务器环境搭建（需 root）
   setup              服务器完整搭建（需已有配置或环境变量）
   setup-common       仅安装基础软件
@@ -91,6 +92,9 @@ run_init() {
     run_configure "${target_dir}"
     echo ""
     run_deploy_scripts "${target_dir}"
+    target_dir="$(cd "${target_dir}" 2>/dev/null && pwd || pwd)"
+    load_fetched_project_lib "${target_dir}"
+    offer_remote_setup "${target_dir}"
 }
 
 run_deploy_scripts() {

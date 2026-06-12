@@ -105,16 +105,6 @@ BACKEND_PORT="8080"
 
 ## 快速开始
 
-### 0. 推送工具仓库（无需填任何项目信息）
-
-[jenshow](https://github.com/showx/jenshow) 是**通用脚本库**，可以直接推送：
-
-```bash
-git add .
-git commit -m "init deploy toolkit"
-git push origin master
-```
-
 ### 1. 交互式配置（推荐，curl 一步步来）
 
 **本机：交互配置 + 下载发布脚本**

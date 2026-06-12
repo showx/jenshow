@@ -276,7 +276,7 @@ interactive_project_config() {
     echo ">>> [1/3] 项目标识"
     _wizard_input PROJECT_NAME "项目名 PROJECT_NAME（目录/服务名）" "myapp"
     _wizard_input API_DOMAIN "API 域名 server_name" "${PROJECT_NAME}.example.com"
-    _wizard_input SERVER_HOST "发布用服务器 IP/域名（本机 setup 可留空）" ""
+    _wizard_input SERVER_HOST "发布用服务器 IP/域名（后续可远程搭建环境）" ""
     _wizard_input SERVER_USER "SSH 用户" "root"
 
     echo ""
@@ -328,4 +328,85 @@ interactive_project_config() {
 
     write_project_conf "${conf_path}"
     echo "✅ 已保存: ${conf_path}"
+}
+
+# ---------- 远程服务器搭建（init 完成后可选） ----------
+
+_build_remote_setup_env() {
+    local var env_args=()
+    for var in PROJECT_NAME API_DOMAIN FRONTEND_ROUTE BACKEND_PORT \
+               BACKEND_DIR FRONTEND_DIR FRONTEND_DIST JENSHOW_BASE_URL SERVER_USER; do
+        env_args+=("$(printf '%s=%q' "$var" "${!var}")")
+    done
+    printf '%s\n' "${env_args[@]}"
+}
+
+run_remote_setup() {
+    local target_dir="$1"
+    local conf_path env_line remote_cmd
+
+    target_dir="$(cd "${target_dir}" && pwd)"
+    conf_path="${target_dir}/project.conf"
+    load_project_config "${target_dir}"
+
+    if [[ -z "${SERVER_HOST}" ]]; then
+        echo "❌ 未设置 SERVER_HOST，无法远程搭建"
+        return 1
+    fi
+
+    echo ""
+    echo ">>> 连接 ${SERVER_USER}@${SERVER_HOST} 搭建环境 ..."
+    echo ">>> 远程自动拉取脚本，无需手动上传 setup_server.sh"
+
+    remote_cmd="curl -fsSL $(printf '%q' "${JENSHOW_BASE_URL}/install.sh") | "
+    remote_cmd+="sudo env"
+    while IFS= read -r env_line; do
+        [[ -n "${env_line}" ]] || continue
+        remote_cmd+=" ${env_line}"
+    done < <(_build_remote_setup_env)
+    remote_cmd+=" bash -s -- setup"
+
+    ssh -t "${SERVER_USER}@${SERVER_HOST}" "${remote_cmd}"
+}
+
+offer_remote_setup() {
+    local target_dir="$1"
+    local conf_path prompted=0
+
+    target_dir="$(cd "${target_dir}" && pwd)"
+    conf_path="${target_dir}/project.conf"
+
+    if [[ ! -f "${conf_path}" ]]; then
+        return 0
+    fi
+
+    if [[ ! -r /dev/tty ]]; then
+        echo ""
+        echo ">>> 提示: 远程搭建需在交互终端执行，或登录服务器后运行:"
+        echo "    curl -fsSL ${JENSHOW_BASE_URL}/install.sh | sudo bash -s -- setup-init"
+        return 0
+    fi
+
+    load_project_config "${target_dir}"
+
+    echo ""
+    if [[ -z "${SERVER_HOST}" ]]; then
+        if ! _wizard_confirm "是否在远程服务器上搭建环境（Nginx + Supervisor + Redis）" "y"; then
+            echo ">>> 已跳过远程搭建"
+            return 0
+        fi
+        _wizard_input SERVER_HOST "服务器 IP/域名"
+        _wizard_input SERVER_USER "SSH 用户" "${SERVER_USER}"
+        prompted=1
+    elif ! _wizard_confirm "是否在服务器 ${SERVER_USER}@${SERVER_HOST} 上搭建环境（Nginx + Supervisor + Redis）" "y"; then
+        echo ">>> 已跳过远程搭建"
+        return 0
+    fi
+
+    if [[ "${prompted}" -eq 1 ]]; then
+        write_project_conf "${conf_path}"
+        echo "✅ 已更新: ${conf_path}"
+    fi
+
+    run_remote_setup "${target_dir}"
 }

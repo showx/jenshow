@@ -83,6 +83,29 @@ curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | b
 ./build_and_upload.sh 20260109_1530
 ```
 
+### 6. 回滚
+
+在 `backend/` 目录执行（脚本会 SSH 到服务器并切换版本，不删除已发布的二进制和前端归档）：
+
+```bash
+# 后端回到上一版（按二进制修改时间）
+./rollback.sh
+
+# 后端切到指定版本
+./rollback.sh 20260109_1200
+
+# 前端回到上一版
+./rollback.sh frontend
+
+# 后端和前端一起回到上一版
+./rollback.sh all
+
+# 查看当前版本和可回滚版本
+./rollback.sh --list
+```
+
+也可以登录服务器，在后端目录直接执行 `./rollback.sh`。
+
 ---
 
 ## 目录结构
@@ -100,7 +123,8 @@ jenshow/
 │   ├── publish.sh              # 后端发布主脚本
 │   ├── build_and_upload.sh     # → publish.sh --upload-only
 │   ├── build_upload_deploy.sh  # → publish.sh
-│   └── deploy.sh               # 服务器端切换版本
+│   ├── deploy.sh               # 服务器端切换版本
+│   └── rollback.sh             # 本机或服务器回滚后端/前端
 └── frontend/
     └── build_and_upload.sh   # 构建 + 打包 + 上传 + 解压部署
 ```
@@ -208,6 +232,17 @@ BACKEND_PORT="8080"
        └─ 解压新版本到 dist/
 ```
 
+### 回滚
+
+```
+本机 backend/rollback.sh
+  └─ scp 同步 rollback.sh 后 ssh 远程执行
+       ├─ 后端：选上一版或指定版本 → deploy.sh 切换软链并重启
+       └─ 前端：解压更旧的 dist_<版本>.tar.gz；没有归档时与 dist_old 对调
+```
+
+旧版本二进制和 `dist_*.tar.gz` 会留在服务器上，回滚不会删除它们，因此可以再切回任意已发布版本。
+
 ### 服务器 setup 做了什么
 
 `setup_server.sh` 会依次完成：
@@ -218,7 +253,7 @@ BACKEND_PORT="8080"
 4. 创建项目目录并设置权限
 5. 写入 Nginx 站点配置
 6. 写入 Supervisor 配置（按 `PROJECT_NAME` 命名）
-7. 同步 `project.conf` 和 `deploy.sh` 到服务器 `backend/` 目录
+7. 同步 `project.conf`、`deploy.sh` 和 `rollback.sh` 到服务器 `backend/` 目录
 
 ---
 
@@ -234,7 +269,7 @@ BACKEND_PORT="8080"
 | SSH 配置 | 已是目标配置则跳过，不重复覆盖 `.bak` |
 | 目录 | 已存在则跳过创建 |
 | Nginx / Supervisor 配置 | 内容无变化则跳过重载 |
-| deploy.sh | 已存在则跳过下载 |
+| deploy.sh / rollback.sh | 已存在则跳过下载 |
 
 ### 强制覆盖选项
 
@@ -242,7 +277,7 @@ BACKEND_PORT="8080"
 # 强制系统升级
 sudo FORCE_UPGRADE=1 ./setup_server.sh
 
-# 强制重新下载 deploy.sh
+# 强制重新下载 deploy.sh、rollback.sh
 sudo FORCE=1 ./setup_server.sh
 ```
 
@@ -266,7 +301,7 @@ curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | s
 | `FRONTEND_ROUTE` | 前端 SPA 路由前缀 |
 | `BACKEND_PORT` | 后端监听端口 |
 | `FORCE_UPGRADE` | `1` = 强制 apt upgrade |
-| `FORCE` | `1` = 强制覆盖 deploy.sh |
+| `FORCE` | `1` = 强制覆盖 deploy.sh、rollback.sh |
 
 ---
 
@@ -279,8 +314,9 @@ curl -fsSL https://raw.githubusercontent.com/showx/jenshow/master/install.sh | s
 ├── backend/
 │   ├── project.conf              # setup 自动同步
 │   ├── deploy.sh                 # setup 自动下载
+│   ├── rollback.sh               # setup 自动下载，本机执行时也会同步
 │   ├── myapp-server              # 软链 → 当前版本二进制
-│   └── myapp-server20260109_1530 # 实际上线的二进制
+│   └── myapp-server20260109_1530 # 实际上线的二进制（旧版本会保留，供回滚）
 └── frontend/
     ├── dist/                     # 当前前端静态文件
     ├── dist_old/                 # 上一次部署备份
@@ -343,4 +379,5 @@ tail -f /var/log/myapp-server.out.log
 | `backend/build_upload_deploy.sh` | 本机 | 后端一键发布（调用 publish.sh） |
 | `backend/build_and_upload.sh` | 本机 | 仅编译上传 |
 | `backend/deploy.sh` | 服务器 | 切换后端版本 |
+| `backend/rollback.sh` | 本机或服务器 | 回滚后端/前端到上一版或指定版本 |
 | `frontend/build_and_upload.sh` | 本机 | 前端一键发布 |

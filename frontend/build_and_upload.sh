@@ -38,3 +38,4 @@ ssh "${SERVER_USER}@${SERVER_HOST}" "cd ${REMOTE_BASE_PATH} && \
     echo \"版本号: ${VERSION}\" >> ${FRONTEND_DIST}/version.txt"
 
 echo "🎉 前端部署完成 → ${REMOTE_DIST_PATH}"
+echo "    如需回滚: ${PROJECT_ROOT}/${BACKEND_DIR}/rollback.sh frontend"

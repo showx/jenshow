@@ -77,12 +77,14 @@ ensure_supervisor_program "${SUPERVISOR_CONF}" "${SUPERVISOR_PROGRAM}" <<EOF
 $(render_supervisor_conf)
 EOF
 
-echo ">>> [9/9] 同步 deploy 配置..."
+echo ">>> [9/9] 同步 deploy / rollback ..."
 render_server_project_conf | write_file_if_changed "${SERVER_BACKEND}/project.conf" || true
 ensure_remote_script "${JENSHOW_BASE_URL}/backend/deploy.sh" "${SERVER_BACKEND}/deploy.sh"
+ensure_remote_script "${JENSHOW_BASE_URL}/backend/rollback.sh" "${SERVER_BACKEND}/rollback.sh"
 
 echo "================================================================="
 echo "  搭建完成 | 项目: ${PROJECT_NAME} | 服务: ${SUPERVISOR_PROGRAM}"
 echo "  后端: ${SERVER_BACKEND} | 前端: ${SERVER_FRONTEND_DIST}"
+echo "  回滚: ${SERVER_BACKEND}/rollback.sh"
 echo "  仓库: https://github.com/showx/jenshow"
 echo "================================================================="

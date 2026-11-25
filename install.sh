@@ -130,6 +130,7 @@ run_deploy_scripts() {
     fetch "backend/build_and_upload.sh"    > "${backend_dir}/build_and_upload.sh"
     fetch "backend/build_upload_deploy.sh" > "${backend_dir}/build_upload_deploy.sh"
     fetch "backend/deploy.sh"              > "${backend_dir}/deploy.sh"
+    fetch "backend/rollback.sh"            > "${backend_dir}/rollback.sh"
     fetch "frontend/build_and_upload.sh"   > "${frontend_dir}/build_and_upload.sh"
     fetch "project.conf.example"           > "${target_dir}/project.conf.example"
 
@@ -141,6 +142,7 @@ run_deploy_scripts() {
         "${backend_dir}/build_and_upload.sh" \
         "${backend_dir}/build_upload_deploy.sh" \
         "${backend_dir}/deploy.sh" \
+        "${backend_dir}/rollback.sh" \
         "${frontend_dir}/build_and_upload.sh"
 
     cat <<EOF
@@ -148,6 +150,7 @@ run_deploy_scripts() {
 ✅ 已就绪
    ${target_dir}/project.conf
    ${backend_dir}/publish.sh
+   ${backend_dir}/rollback.sh
    ${frontend_dir}/build_and_upload.sh
 EOF
 }

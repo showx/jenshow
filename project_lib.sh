@@ -187,11 +187,13 @@ EOF
 
 render_server_project_conf() {
     cat <<EOF
-# 由 setup 同步到服务器，供 deploy.sh 使用
+# 由 setup 同步到服务器，供 deploy.sh / rollback.sh 使用
 PROJECT_NAME="${PROJECT_NAME}"
 APP_NAME="${APP_NAME}"
 SUPERVISOR_PROGRAM="${SUPERVISOR_PROGRAM}"
+FRONTEND_DIR="${FRONTEND_DIR}"
 FRONTEND_DIST="${FRONTEND_DIST}"
+SERVER_FRONTEND="${SERVER_FRONTEND}"
 EOF
 }
 

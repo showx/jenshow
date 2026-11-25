@@ -53,3 +53,4 @@ deploy_backend_remote "${VERSION}" || {
 }
 
 echo "🎉 ${SUPERVISOR_PROGRAM} 版本 ${VERSION} 已上线"
+echo "    如需回滚: ./rollback.sh"
